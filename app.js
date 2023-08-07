@@ -1,15 +1,17 @@
 const express = require('express');
 const app = express();
+const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
 const user = require('./routes/user');
 const authMiddleware = require('./routes/authMiddleware');
 const sequelize = require('./database');
 
+app.use(morgan('tiny'));
 app.use(bodyParser.json());
 
 sequelize.sync().then((result) => {
-    console.log(result);
+    console.log('Sync completed successfully!');
 }).catch((error) => {
     console.log('Error while sequelize sync : ', error);
 });

@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models/user.js');
+const Joi = require('joi');
+const User = require('../models/User');
 
 async function signup(req, res) {
 
@@ -14,30 +15,29 @@ async function signup(req, res) {
     });
 
     const result = schema.validate(req.body);
-    if (result) {
-        return res.status(400).json({ error: error.details[0].message });
+    if (result.error) {
+        return res.status(400).json({ error: result.error.details[0].message });
     }
 
     const body = req.body;
 
-    // Check if email already exists
-    const emailExists = await User.findOne({ where: { email: body.email } });
-    if (emailExists) {
-        return res.status(409).json({ error: 'Email already exists' });
-    }
-
-    // Check if username already exists
-    const usernameExists = await User.findOne({ where: { username: body.username } });
-    if (usernameExists) {
-        return res.status(409).json({ error: 'Username already exists' });
-    }
-
-    // Hash the password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(body.password, saltRounds);
-
-    // Create a new user in the database
     try {
+        // Check if email already exists
+        const emailExists = await User.findOne({ where: { email: body.email } });
+        if (emailExists) {
+            return res.status(409).json({ error: 'Email already exists' });
+        }
+        // Check if username already exists
+        const usernameExists = await User.findOne({ where: { username: body.username } });
+        if (usernameExists) {
+            return res.status(409).json({ error: 'Username already exists' });
+        }
+
+        // Hash the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(body.password, saltRounds);
+
+        // Create a new user in the database
         const newUser = await User.create({
             firstName: body.firstName,
             lastName: body.lastName,
@@ -61,8 +61,8 @@ async function login(req, res) {
     });
 
     const result = schema.validate(req.body);
-    if (result) {
-        return res.status(400).json({ error: error.details[0].message });
+    if (result.error) {
+        return res.status(400).json({ error: result.error.details[0].message });
     }
 
     const body = req.body;
